@@ -1,0 +1,1 @@
+ponyc -V=1 --debug -o bin/
