@@ -1,11 +1,15 @@
-// This program will take the array [1, 2, 3, 4, ..., 10]
+// This program will take the array [1, 2, 3, 4, ..., 100]
 // and add 10 to each element
 // using two actors, each on half of the array in parallel
 // then prints the array
 use "itertools"
 use "assert"
 use "collections"
+
 primitive Helpers
+  """
+  Helper functions
+  """
   fun createRange(n: USize): Array[USize] iso^ =>
     let a = recover Array[USize](n) end
     for i in Range(0, n) do
@@ -22,15 +26,15 @@ primitive Helpers
       a
     end
 
-actor Adder
-  let _runner: Main
+actor Worker
+  let _main: Main
 
-  new create(runner: Main) =>
-    _runner = runner
+  new create(m: Main) =>
+    _main = m
 
   be addN(array: Array[USize] iso, n: USize) =>
     let arr = Helpers.addN(consume array, n)
-    _runner.checkIn(consume arr)
+    _main.checkIn(consume arr)
 
 actor Main
   let _env: Env
@@ -46,7 +50,7 @@ actor Main
     // chop the array
     (let left, let right) = Helpers.createRange(size).chop(size/2)
     // spawn a thread to work on the left half
-    Adder(this).addN(consume left, n) // run in parallel
+    Worker(this).addN(consume left, n) // run in parallel
     // work on the right half
     let right' = Helpers.addN(consume right, n)
     // check in (worker thread will also check in)
@@ -75,7 +79,7 @@ actor Main
       finish(consume a)
     end
 
-  be finish(arr: Array[USize] val) =>
+  fun finish(arr: Array[USize] val) =>
     let strs = Iter[USize](arr.values()).map[String]({(x) => x.string() })
     let result = ",".join(strs)
     _env.out.print(consume result)
