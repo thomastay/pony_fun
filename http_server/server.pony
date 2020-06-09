@@ -15,7 +15,7 @@ class val Server is TCPConnectionNotify
   fun ref received(conn: TCPConnection ref, data': Array[U8] iso, _: USize)
   : Bool
   =>
-    let data = recover val String.from_iso_array(consume data') end
+    let data = String.from_array(consume data')
     _out.print("Request!\n" + data)
     _out.print("sleeping now...")
     let s = spin()
