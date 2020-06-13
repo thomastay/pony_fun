@@ -18,7 +18,7 @@ class val Server is TCPConnectionNotify
     let data = String.from_array(consume data')
     _out.print("Request!\n" + data)
     _out.print("sleeping now...")
-    let s = spin()
+    //let s = spin()
     let header = "HTTP/1.1 200 OK\r\n\r\n"
     let header404 = "HTTP/1.1 404 Not Found\r\n\r\n"
     let get = "GET / HTTP/1.1\r\n"
@@ -28,7 +28,7 @@ class val Server is TCPConnectionNotify
     else
       conn.write(header404)
     end
-    conn.write(s)
+    //conn.write(s)
     conn.dispose()
     _out.print("Connection handled.")
     false

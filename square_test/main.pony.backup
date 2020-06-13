@@ -1,0 +1,24 @@
+use "collections"  // for the Range operator
+actor Main
+  let _env: Env
+  var x: I32
+
+  new create(env: Env) =>
+    _env = env // store env into a member variable
+    x = 0
+    for i in Range[I32](1, 11) do
+      x = x + i  // sum 1 to 10 in x, a member variable
+    end
+
+    // spawn a squarer actor,
+    // and then call the square behavior on it
+    Squarer.square(x, recover this~printResult() end)
+
+  be printResult(newVal: I32) =>
+    _env.out.print("Original: " + x.string() 
+                  + ", New: " + newVal.string())
+
+actor Squarer
+  be square(x: I32, callback: {(I32): None} val) =>
+    let newVal = x * x
+    callback(newVal)
