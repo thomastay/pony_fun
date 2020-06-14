@@ -1,27 +1,37 @@
-use "collections"  // for the Range operator
-use "promises" 
-
+use "collections" // for range
 actor Main
+  let _env: Env
   new create(env: Env) =>
-    var x: USize = 0
-    for i in Range(1, 11) do
-      x = x + i  // sum 1 to 10 in x, a member variable
+    _env = env
+    directCallback()
+    //asyncCallback()
+  
+  be directCallback() =>
+    Worker.work(_env.out, {() => 
+      let s = recover iso String end
+      for i in Range(1, 1000000) do 
+        s.append(i.string())
+      end
+      // slice out first 5 elements
+      let s' = (consume s).trim(0, 5)
+      _env.out.print(s')
+    })
+
+  be asyncCallback() =>
+    Worker.work(_env.out, recover this~spin() end)
+  
+  // simulate work to spin the CPU
+  be spin() =>
+    let s = recover iso String end
+    for i in Range(1, 1000000) do 
+      s.append(i.string())
     end
+    // slice out first 5 elements
+    let s' = (consume s).trim(0, 5)
+    _env.out.print(s')
 
-    // create a promise that takes as input the squared num
-    // then will print to stdout
-    let p = Promise[USize]
-    p.next[None](recover this~printResult(env, x) end)
 
-    // spawn a squarer actor,
-    // and then call the square behavior on it
-    Squarer.square(x, p)
-
-  be printResult(env: Env, x: USize, newVal: USize) =>
-    env.out.print("Original: " + x.string() 
-                  + ", New: " + newVal.string())
-
-actor Squarer
-  be square(x: USize, p: Promise[USize]) =>
-    let newVal = x * x
-    p(newVal)     // fulfil the promise
+actor Worker
+  be work(out: OutStream, callback: {(): None} val) =>
+    callback()
+    out.print("Squaring complete!")
